@@ -1,22 +1,23 @@
-// src/pages/Register.jsx
 import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom"; // أضفنا useNavigate
+import { Link, useNavigate } from "react-router-dom";
 
 export default function Register() {
   const navigate = useNavigate();
-  const [username, setUsername] = useState("");
+  // تعديل اسم الحالة لتطابق المسمى في التقرير: User_Name
+  const [User_Name, setUser_Name] = useState(""); 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [errors, setErrors] = useState({});
-  const [isSubmitting, setIsSubmitting] = useState(false); // حالة التحميل
-  const [apiError, setApiError] = useState(""); // خطأ من السيرفر
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [apiError, setApiError] = useState("");
 
   const validate = () => {
     const newErrors = {};
-    if (!username.trim()) {
-      newErrors.username = "Username is required";
-    } else if (username.trim().length < 3) {
-      newErrors.username = "Username must be at least 3 characters";
+    // التحقق من الاسم بناءً على "Main Course - Step 4" في التقرير
+    if (!User_Name.trim()) {
+      newErrors.User_Name = "Full Name is required";
+    } else if (User_Name.trim().length < 3) {
+      newErrors.User_Name = "Name must be at least 3 characters";
     }
 
     if (!email.trim()) {
@@ -25,6 +26,7 @@ export default function Register() {
       newErrors.email = "Please enter a valid email";
     }
 
+    // التحقق من قوة كلمة المرور (أكثر من 8 خانات كما في التقرير)
     if (!password) {
       newErrors.password = "Password is required";
     } else if (password.length < 8) {
@@ -35,7 +37,6 @@ export default function Register() {
     return Object.keys(newErrors).length === 0;
   };
 
-  // --- الربط مع الباك إيند هنا ---
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validate()) return;
@@ -44,13 +45,14 @@ export default function Register() {
     setApiError("");
 
     try {
-      const response = await fetch("http://127.0.0.1:8000/api/register", {
+      // تعديل الرابط ليتوافق مع المسار في FastAPI
+      const response = await fetch("http://127.0.0.1:8000/auth/register", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          username: username,
+          User_Name: User_Name, // إرسال المسمى الصحيح للباك إيند
           email: email,
           password: password,
         }),
@@ -59,15 +61,16 @@ export default function Register() {
       const data = await response.json();
 
       if (response.ok) {
-        // إذا نجح التسجيل، ننتقل لصفحة تسجيل الدخول
+        // حالة النجاح (Postconditions صفحة 4)
         alert("Account created successfully! Please sign in.");
-        navigate("/login");
+        navigate("/login"); // التوجيه لصفحة تسجيل الدخول كما في التقرير
       } else {
-        // عرض الخطأ (مثل: الإيميل موجود مسبقاً)
+        // عرض الأخطاء الموثقة مثل "Email already registered"
         setApiError(data.detail || "Registration failed. Try again.");
       }
     } catch (error) {
-      setApiError("Network error. Please check if the backend is running.");
+      // خطأ في الاتصال (Exception EX1 صفحة 4)
+      setApiError("System error, please try again later.");
       console.error("Register Error:", error);
     } finally {
       setIsSubmitting(false);
@@ -77,32 +80,25 @@ export default function Register() {
   return (
     <div className="auth-page">
       <div className="auth-container">
-        {/* Left side يبقى كما هو */}
-        <div className="auth-side">
-            {/* ... كود الـ Brand و Side-text ... */}
-        </div>
-
-        {/* Right side (form) */}
         <div className="auth-main">
           <div className="auth-header">
             <h1>Create Account</h1>
             <p>Enter your details to sign up</p>
           </div>
 
-          {/* عرض خطأ السيرفر إذا وجد */}
           {apiError && <p style={{ color: "#ff4d4d", marginBottom: "15px" }}>{apiError}</p>}
 
           <form className="auth-form" onSubmit={handleSubmit}>
             <div className="field">
-              <label className="field-label">Username</label>
+              <label className="field-label">Full Name</label>
               <input
                 type="text"
-                className={`field-input ${errors.username ? "field-input-error" : ""}`}
-                placeholder="e.g. raed_crypto"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
+                className={`field-input ${errors.User_Name ? "field-input-error" : ""}`}
+                placeholder="Enter your full name"
+                value={User_Name}
+                onChange={(e) => setUser_Name(e.target.value)}
               />
-              {errors.username && <span className="error-text">{errors.username}</span>}
+              {errors.User_Name && <span className="error-text">{errors.User_Name}</span>}
             </div>
 
             <div className="field">
